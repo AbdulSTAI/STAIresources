@@ -12,6 +12,16 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc; /* Tailwind gray-50 */
         }
+        /* Hide number input arrows in Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        /* Hide number input arrows in Firefox */
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
         .slider {
              -webkit-appearance: none;
             appearance: none;
@@ -83,7 +93,7 @@
             border-radius: 6px;
             padding: 8px;
             position: absolute;
-            z-index: 1;
+            z-index: 50; /* Increased z-index */
             bottom: 125%;
             left: 50%;
             margin-left: -125px; /* Use half of the width to center */
@@ -105,151 +115,176 @@
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Is STAI™ right for you? Let’s crunch the numbers.</h1>
         </header>
 
-        <!-- ROI Calculator Section -->
-        <div class="bg-white p-6 rounded-xl shadow-md mb-10">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Start here</h2>
-
-            <!-- Step 1: Inputs -->
-            <div id="step-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                     <div>
-                        <div class="flex items-center justify-between">
-                            <label for="peopleTrained" class="block text-sm font-medium text-gray-700">People Trained Annually</label>
-                            <span id="peopleTrained-value" class="font-semibold text-teal-600">100</span>
-                        </div>
-                        <input type="range" id="peopleTrained" min="1" max="10000" value="100" step="1" class="mt-2 block w-full slider">
-                        <p class="mt-2 text-xs text-gray-500">The total number of people you plan to train in one year.</p>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between">
-                            <label for="annualSalary" class="block text-sm font-medium text-gray-700">Average Annual Salary (£)</label>
-                            <span id="annualSalary-value" class="font-semibold text-teal-600">£35,000</span>
-                        </div>
-                        <input type="range" id="annualSalary" min="20000" max="200000" value="35000" step="1000" class="mt-2 block w-full slider">
-                        <p class="mt-2 text-xs text-gray-500">Used to calculate hourly wage costs. Assumes a 2,080-hour work year.</p>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between">
-                            <label for="passScore" class="block text-sm font-medium text-gray-700">Required Pass Score (%)</label>
-                            <span id="passScore-value" class="font-semibold text-teal-600">60%</span>
-                        </div>
-                        <input type="range" id="passScore" min="0" max="80" value="60" class="mt-2 block w-full slider">
-                        <p class="mt-2 text-xs text-gray-500">The minimum percentage an individual must score to pass the assessment.</p>
-                    </div>
-                     <div>
-                        <div class="flex items-center justify-between">
-                            <div class="tooltip-container">
-                                <label for="passRate" class="block text-sm font-medium text-gray-700">Required Group Pass Rate (%)</label>
-                                <span class="tooltip-trigger">?</span>
-                                <div class="tooltip-content">The target percentage of the entire group that must pass the training for it to be considered successful.</div>
-                            </div>
-                             <span id="passRate-value" class="font-semibold text-teal-600">95%</span>
-                        </div>
-                        <input type="range" id="passRate" min="0" max="100" value="95" class="mt-2 block w-full slider">
-                        <p class="mt-2 text-xs text-gray-500">Your target for the overall training programme's success.</p>
-                    </div>
+        <!-- Initial Form -->
+        <div id="initial-form" class="bg-white p-6 rounded-xl shadow-md mb-10">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Start with two key numbers:</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div>
+                    <label for="initialPeopleTrained" class="block text-sm font-medium text-gray-700">People Trained Annually</label>
+                    <input type="number" id="initialPeopleTrained" value="100" min="1" class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm">
+                    <p class="mt-2 text-xs text-gray-500">The total number of people you plan to train in one year.</p>
                 </div>
-                <div class="mt-8 text-center">
-                    <button id="calculate-btn" class="bg-teal-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-teal-600 transition-colors text-lg">Calculate My ROI</button>
+                <div>
+                    <label for="initialAnnualSalary" class="block text-sm font-medium text-gray-700">Average Annual Salary (£)</label>
+                    <input type="number" id="initialAnnualSalary" value="35000" min="20000" step="1000" class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm">
+                    <p class="mt-2 text-xs text-gray-500">Used to calculate hourly wage costs.</p>
                 </div>
             </div>
-
-            <!-- Step 2: Results -->
-            <div id="step-2" class="hidden">
-                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <!-- Savings Summary First for Mobile -->
-                    <div class="sm:col-span-2 bg-green-50 p-6 rounded-lg border border-green-200 text-center">
-                        <h3 class="text-lg font-semibold text-green-800">Projected Annual Savings with STAI™</h3>
-                        <p class="text-5xl font-bold text-green-600 mt-2" id="totalSavings"></p>
-                    </div>
-
-                     <!-- Traditional Training -->
-                    <div class="bg-gray-100 p-6 rounded-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">Traditional Training</h3>
-                        <p class="text-sm text-gray-600 mb-4">Costs using conventional training methods to meet your pass rate target.</p>
-                        <div class="space-y-3">
-                            <p class="flex justify-between">Est. Pass Rate: <span id="tradPassRate" class="font-semibold"></span></p>
-                            <div class="tooltip-container">
-                                <p class="flex justify-between w-full">Add'l Training Hours: <span id="tradRetrainingHours" class="font-semibold"></span></p>
-                                <span class="tooltip-trigger">?</span>
-                                <div class="tooltip-content">Extra hours needed to retrain staff to meet your target. If the pass rate is very low, meeting a high target can become practically impossible.</div>
-                            </div>
-                            <p class="flex justify-between">Total Wage Cost: <span id="tradWageCost" class="font-semibold"></span></p>
-                            <p class="flex justify-between text-xl font-bold text-red-600">Total Cost: <span id="tradTotalCost"></span></p>
-                        </div>
-                    </div>
-                    <!-- STAI Training -->
-                    <div class="bg-teal-50 p-6 rounded-lg border border-teal-200">
-                        <h3 class="text-lg font-semibold text-teal-800">STAI™ Training</h3>
-                        <p class="text-sm text-teal-700 mb-4">Costs using STAI™, benefiting from higher pass rates and reduced retraining.</p>
-                        <div class="space-y-3">
-                            <p class="flex justify-between">Est. Pass Rate: <span id="staiPassRate" class="font-semibold"></span></p>
-                            <div class="tooltip-container">
-                                <p class="flex justify-between w-full">Add'l Training Hours: <span id="staiRetrainingHours" class="font-semibold"></span></p>
-                                 <span class="tooltip-trigger">?</span>
-                                <div class="tooltip-content">Extra hours needed to retrain staff to meet your target. STAI™'s higher pass rate significantly reduces this number.</div>
-                            </div>
-                            <p class="flex justify-between">Total Wage Cost: <span id="staiWageCost" class="font-semibold"></span></p>
-                            <p class="flex justify-between text-xl font-bold text-green-600">Total Cost: <span id="staiTotalCost"></span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-8 text-center">
-                    <button id="back-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Edit figures</button>
-                </div>
+             <div class="mt-8 text-center">
+                <button id="show-results-btn" class="bg-teal-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-teal-600 transition-colors text-lg">Calculate My ROI</button>
             </div>
         </div>
 
-        <!-- Accordions for additional info -->
-        <div class="space-y-4">
-            <details class="bg-white rounded-xl shadow-md overflow-hidden">
-                <summary class="p-6 flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">See the Data Visualised</h2>
-                    <svg class="w-6 h-6 text-gray-500 transition-transform duration-300 accordion-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </summary>
-                <div class="px-6 pb-6 border-t border-gray-200">
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Pre-Course Assessment Scores</h3>
-                            <p class="text-gray-600 mb-4 text-sm">Both groups started with similar baseline knowledge, crucial for a fair comparison.</p>
-                            <div id="pre-course-chart" class="w-full h-80"></div>
-                        </div>
-                        <div>
-                           <h3 class="text-lg font-semibold text-gray-800 mb-2">Post-Course Assessment Scores</h3>
-                           <p class="text-gray-600 mb-4 text-sm">The STAI™ group's curve shows higher, more consistent scores, while the traditional group's is wider and lower.</p>
-                           <div id="post-course-chart" class="w-full h-80"></div>
-                        </div>
-                    </div>
-                </div>
-            </details>
 
-            <details class="bg-white rounded-xl shadow-md overflow-hidden">
-                <summary class="p-6 flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">How This Calculator Works</h2>
-                     <svg class="w-6 h-6 text-gray-500 transition-transform duration-300 accordion-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </summary>
-                <div class="px-6 pb-6 border-t border-gray-200">
-                    <div class="space-y-6 text-gray-700 pt-4">
-                        <p>This calculator uses statistical methods to project training costs based on the performance data from the provided academic study. Here’s a breakdown of how it works and the assumptions it makes.</p>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Data from the Report</h3>
-                            <p>The core performance metrics are from "A Comparative Study on the Effectiveness of Smart-Training Al™ Versus Traditional Training Methods".</p>
-                            <ul class="list-disc list-inside mt-2 space-y-1 text-sm pl-2">
-                                <li><strong>STAI™ Training (Group A):</strong> Mean Score = 80.5%, Standard Deviation = 2.9%</li>
-                                <li><strong>Traditional Training (Group B):</strong> Mean Score = 59.4%, Standard Deviation = 7.1%</li>
-                            </ul>
+        <!-- Main ROI Calculator Section (Initially Hidden) -->
+        <div id="main-calculator" class="hidden">
+            <div class="bg-white p-6 rounded-xl shadow-md mb-10">
+                <!-- Step 1: Full Inputs (The Editor) - Initially hidden -->
+                <div id="step-1" class="hidden pb-8 border-b border-gray-200 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Edit Your Figures</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                         <div>
+                            <div class="flex items-center justify-between">
+                                <label for="peopleTrained" class="block text-sm font-medium text-gray-700">People Trained Annually</label>
+                                <span id="peopleTrained-value" class="font-semibold text-teal-600">100</span>
+                            </div>
+                            <input type="range" id="peopleTrained" min="1" max="10000" value="100" step="1" class="mt-2 block w-full slider">
+                            <p class="mt-2 text-xs text-gray-500">The total number of people you plan to train in one year.</p>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Core Calculation: Estimating Pass Rates</h3>
-                            <p>The calculator assumes test scores for each group follow a Normal Distribution (the "bell curve" in the graphs). Using the mean and standard deviation, it calculates the probability that an employee will score above your "Required Pass Score".</p>
+                            <div class="flex items-center justify-between">
+                                <label for="annualSalary" class="block text-sm font-medium text-gray-700">Average Annual Salary (£)</label>
+                                <span id="annualSalary-value" class="font-semibold text-teal-600">£35,000</span>
+                            </div>
+                            <input type="range" id="annualSalary" min="20000" max="200000" value="35000" step="1000" class="mt-2 block w-full slider">
+                            <p class="mt-2 text-xs text-gray-500">Used to calculate hourly wage costs. Assumes a 2,080-hour work year.</p>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Calculating Retraining Costs</h3>
-                            <p>To meet your "Required Group Pass Rate", you may need to retrain some people. For example, if you need 95% of 1,000 people to pass (950 people), but a method only has a 50% pass rate, you will need to train 1,900 people in total (`950 / 0.50`) to hit your target. The model calculates the wage cost for these additional training sessions.</p>
+                            <div class="flex items-center justify-between">
+                                <label for="passScore" class="block text-sm font-medium text-gray-700">Required Pass Score (%)</label>
+                                <span id="passScore-value" class="font-semibold text-teal-600">60%</span>
+                            </div>
+                            <input type="range" id="passScore" min="0" max="80" value="60" class="mt-2 block w-full slider">
+                            <p class="mt-2 text-xs text-gray-500">The minimum percentage an individual must score to pass the assessment.</p>
+                        </div>
+                         <div>
+                            <div class="flex items-center justify-between">
+                                <div class="tooltip-container">
+                                    <label for="passRate" class="block text-sm font-medium text-gray-700">Required Group Pass Rate (%)</label>
+                                    <span class="tooltip-trigger">?</span>
+                                    <div class="tooltip-content">The target percentage of the entire group that must pass the training for it to be considered successful.</div>
+                                </div>
+                                 <span id="passRate-value" class="font-semibold text-teal-600">95%</span>
+                            </div>
+                            <input type="range" id="passRate" min="0" max="100" value="95" class="mt-2 block w-full slider">
+                            <p class="mt-2 text-xs text-gray-500">Your target for the overall training programme's success.</p>
                         </div>
                     </div>
                 </div>
-            </details>
+
+                <!-- Step 2: Results -->
+                <div id="step-2">
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Savings Summary First for Mobile -->
+                        <div class="sm:col-span-2 bg-green-50 p-6 rounded-lg border border-green-200 text-center">
+                            <h3 class="text-lg font-semibold text-green-800">Projected Annual Savings with STAI™</h3>
+                            <p class="text-5xl font-bold text-green-600 mt-2" id="totalSavings"></p>
+                        </div>
+
+                         <!-- Traditional Training -->
+                        <div class="bg-gray-100 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-800">Traditional Training</h3>
+                            <p class="text-sm text-gray-600 mb-4">Costs using conventional training methods to meet your pass rate target.</p>
+                            <div class="space-y-3">
+                                <p class="flex justify-between">Est. Pass Rate: <span id="tradPassRate" class="font-semibold"></span></p>
+                                <div class="flex justify-between">
+                                    <span class="tooltip-container">
+                                        Additional Training:
+                                        <span class="tooltip-trigger">?</span>
+                                        <div class="tooltip-content">Extra hours needed to retrain staff to meet your target. If the pass rate is very low, meeting a high target can become practically impossible.</div>
+                                    </span>
+                                    <span id="tradRetrainingHours" class="font-semibold"></span>
+                                </div>
+                                <p class="flex justify-between">Total Wage Cost: <span id="tradWageCost" class="font-semibold"></span></p>
+                                <p class="flex justify-between text-xl font-bold text-red-600">Total Cost: <span id="tradTotalCost"></span></p>
+                            </div>
+                        </div>
+                        <!-- STAI Training -->
+                        <div class="bg-teal-50 p-6 rounded-lg border border-teal-200">
+                            <h3 class="text-lg font-semibold text-teal-800">STAI™ Training</h3>
+                            <p class="text-sm text-teal-700 mb-4">Costs using STAI™, benefiting from higher pass rates and reduced retraining.</p>
+                            <div class="space-y-3">
+                                <p class="flex justify-between">Est. Pass Rate: <span id="staiPassRate" class="font-semibold"></span></p>
+                                <div class="flex justify-between">
+                                    <span class="tooltip-container">
+                                        Additional Training:
+                                        <span class="tooltip-trigger">?</span>
+                                        <div class="tooltip-content">Extra hours needed to retrain staff to meet your target. STAI™'s higher pass rate significantly reduces this number.</div>
+                                    </span>
+                                    <span id="staiRetrainingHours" class="font-semibold"></span>
+                                </div>
+                                <p class="flex justify-between">Total Wage Cost: <span id="staiWageCost" class="font-semibold"></span></p>
+                                <p class="flex justify-between text-xl font-bold text-green-600">Total Cost: <span id="staiTotalCost"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button id="edit-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Edit All Figures</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordions for additional info -->
+            <div class="space-y-4">
+                <details class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <summary class="p-6 flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-800">See the Data Visualised</h2>
+                        <svg class="w-6 h-6 text-gray-500 transition-transform duration-300 accordion-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="px-6 pb-6 border-t border-gray-200">
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Pre-Course Assessment Scores</h3>
+                                <p class="text-gray-600 mb-4 text-sm">Both groups started with similar baseline knowledge, crucial for a fair comparison.</p>
+                                <div id="pre-course-chart" class="w-full h-80"></div>
+                            </div>
+                            <div>
+                               <h3 class="text-lg font-semibold text-gray-800 mb-2">Post-Course Assessment Scores</h3>
+                               <p class="text-gray-600 mb-4 text-sm">The STAI™ group's curve shows higher, more consistent scores, while the traditional group's is wider and lower.</p>
+                               <div id="post-course-chart" class="w-full h-80"></div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <summary class="p-6 flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-800">How This Calculator Works</h2>
+                         <svg class="w-6 h-6 text-gray-500 transition-transform duration-300 accordion-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="px-6 pb-6 border-t border-gray-200">
+                        <div class="space-y-6 text-gray-700 pt-4">
+                            <p>This calculator uses statistical methods to project training costs based on the performance data from the provided academic study. Here’s a breakdown of how it works and the assumptions it makes.</p>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Data from the Report</h3>
+                                <p>The core performance metrics are from "A Comparative Study on the Effectiveness of Smart-Training Al™ Versus Traditional Training Methods".</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1 text-sm pl-2">
+                                    <li><strong>STAI™ Training (Group A):</strong> Mean Score = 80.5%, Standard Deviation = 2.9%</li>
+                                    <li><strong>Traditional Training (Group B):</strong> Mean Score = 59.4%, Standard Deviation = 7.1%</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Core Calculation: Estimating Pass Rates</h3>
+                                <p>The calculator assumes test scores for each group follow a Normal Distribution (the "bell curve" in the graphs). Using the mean and standard deviation, it calculates the probability that an employee will score above your "Required Pass Score".</p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Calculating Retraining Costs</h3>
+                                <p>To meet your "Required Group Pass Rate", you may need to retrain some people. For example, if you need 95% of 1,000 people to pass (950 people), but a method only has a 50% pass rate, you will need to train 1,900 people in total (`950 / 0.50`) to hit your target. The model calculates the wage cost for these additional training sessions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
         </div>
 
 
@@ -266,10 +301,18 @@
         const workingHoursPerYear = 2080;
         
         // --- DOM ELEMENTS ---
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
-        const calculateBtn = document.getElementById('calculate-btn');
-        const backBtn = document.getElementById('back-btn');
+        const initialForm = document.getElementById('initial-form');
+        const mainCalculator = document.getElementById('main-calculator');
+        const step1 = document.getElementById('step-1'); // The editor
+        const step2 = document.getElementById('step-2'); // The results
+        
+        const showResultsBtn = document.getElementById('show-results-btn');
+        const editBtn = document.getElementById('edit-btn');
+
+        const initialInputs = {
+            peopleTrained: document.getElementById('initialPeopleTrained'),
+            annualSalary: document.getElementById('initialAnnualSalary'),
+        };
 
         const inputs = {
             peopleTrained: document.getElementById('peopleTrained'),
@@ -412,25 +455,40 @@
                 passRate: document.getElementById('passRate-value')
             };
             
-            const updateSliderDisplays = () => {
+            const updateMainSliderDisplays = () => {
                 valueDisplays.peopleTrained.textContent = parseFloat(inputs.peopleTrained.value).toLocaleString('en-GB');
                 valueDisplays.annualSalary.textContent = `£${parseFloat(inputs.annualSalary.value).toLocaleString('en-GB')}`;
                 valueDisplays.passScore.textContent = `${inputs.passScore.value}%`;
                 valueDisplays.passRate.textContent = `${inputs.passRate.value}%`;
             };
+
+            // Listeners for main calculator form (for real-time updates)
+            Object.values(inputs).forEach(input => {
+                input.addEventListener('input', () => {
+                    updateMainSliderDisplays();
+                    calculateROI(); // Recalculate whenever a main slider is moved
+                });
+            });
             
-            Object.values(inputs).forEach(input => input.addEventListener('input', updateSliderDisplays));
-            
-            calculateBtn.addEventListener('click', () => {
-                calculateROI();
-                step1.classList.add('hidden');
+            showResultsBtn.addEventListener('click', () => {
+                // Transfer initial values to main calculator
+                inputs.peopleTrained.value = initialInputs.peopleTrained.value;
+                inputs.annualSalary.value = initialInputs.annualSalary.value;
+                
+                updateMainSliderDisplays(); // Sync display
+                calculateROI(); // Run calculation
+
+                // Show main calculator and hide initial form
+                initialForm.classList.add('hidden');
+                mainCalculator.classList.remove('hidden');
+                step1.classList.add('hidden'); // Ensure editor is hidden on first view
                 step2.classList.remove('hidden');
                 window.scrollTo(0, 0);
             });
 
-            backBtn.addEventListener('click', () => {
-                step2.classList.add('hidden');
-                step1.classList.remove('hidden');
+            editBtn.addEventListener('click', () => {
+                step1.classList.toggle('hidden'); // Toggle the editor view
+                editBtn.textContent = step1.classList.contains('hidden') ? 'Edit All Figures' : 'Hide Editor';
             });
 
             document.querySelectorAll('details').forEach(detail => {
@@ -442,7 +500,8 @@
                 });
             });
             
-            updateSliderDisplays();
+            // Initial setup of display values
+            updateMainSliderDisplays();
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
@@ -450,6 +509,7 @@
 
 </body>
 </html>
+
 
 
 
