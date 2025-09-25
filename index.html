@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Effectiveness & ROI Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Tailwind gray-50 */
+        }
+        .slider {
+             -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #d1d5db; /* gray-300 */
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            border-radius: 9999px;
+        }
+        .slider:hover {
+            opacity: 1;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Training Effectiveness & ROI Calculator</h1>
+            <p class="mt-2 text-lg text-gray-600">Analyse training outcomes and calculate the potential return on investment from using STAI™.</p>
+        </header>
+
+        <!-- ROI Calculator Section -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-10">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Return on Investment Calculator</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Input Controls -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="employees" class="block text-sm font-medium text-gray-700">Employees Trained Annually</label>
+                            <span id="employees-value" class="font-semibold text-blue-600">1000</span>
+                        </div>
+                        <input type="range" id="employees" min="100" max="10000" value="1000" class="mt-2 block w-full slider">
+                        <p class="mt-2 text-xs text-gray-500">The total number of employees you plan to train in one year.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="hourlyWage" class="block text-sm font-medium text-gray-700">Average Hourly Wage (£)</label>
+                            <span id="hourlyWage-value" class="font-semibold text-blue-600">£20</span>
+                        </div>
+                        <input type="range" id="hourlyWage" min="15" max="150" value="20" class="mt-2 block w-full slider">
+                        <p class="mt-2 text-xs text-gray-500">The average wage per hour for an employee, used to calculate the cost of time spent training.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="passScore" class="block text-sm font-medium text-gray-700">Required Pass Score (%)</label>
+                            <span id="passScore-value" class="font-semibold text-blue-600">60%</span>
+                        </div>
+                        <input type="range" id="passScore" min="0" max="80" value="60" class="mt-2 block w-full slider">
+                        <p class="mt-2 text-xs text-gray-500">The minimum percentage score an individual must achieve to pass the assessment.</p>
+                    </div>
+                     <div>
+                        <div class="flex items-center justify-between">
+                            <label for="passRate" class="block text-sm font-medium text-gray-700">Required Pass Rate (%)</label>
+                             <span id="passRate-value" class="font-semibold text-blue-600">100%</span>
+                        </div>
+                        <input type="range" id="passRate" min="0" max="100" value="100" class="mt-2 block w-full slider">
+                        <p class="mt-2 text-xs text-gray-500">The target percentage of the entire group that must pass the training for it to be successful.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                             <label for="staiCost" class="block text-sm font-medium text-gray-700">STAI Cost Per Employee (£)</label>
+                             <span id="staiCost-value" class="font-semibold text-blue-600">£97</span>
+                        </div>
+                        <input type="range" id="staiCost" min="24" max="97" value="97" class="mt-2 block w-full slider">
+                        <p class="mt-2 text-xs text-gray-500">The licensing or service fee for using the STAI™ platform for a single employee.</p>
+                    </div>
+                </div>
+                <!-- Results -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- Traditional Training -->
+                    <div class="bg-gray-100 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800">Traditional Training</h3>
+                        <p class="text-sm text-gray-600 mb-4">Costs associated with conventional training methods to meet the required pass rate.</p>
+                        <div class="space-y-3">
+                            <p class="flex justify-between">Est. Pass Rate: <span id="tradPassRate" class="font-semibold"></span></p>
+                            <p class="flex justify-between">Additional Training Hours: <span id="tradRetrainingHours" class="font-semibold"></span></p>
+                            <p class="flex justify-between">Total Wage Cost: <span id="tradWageCost" class="font-semibold"></span></p>
+                            <p class="flex justify-between text-xl font-bold text-red-600">Total Cost: <span id="tradTotalCost"></span></p>
+                        </div>
+                    </div>
+                    <!-- STAI Training -->
+                    <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                         <h3 class="text-lg font-semibold text-blue-800">STAI™ Training</h3>
+                        <p class="text-sm text-blue-700 mb-4">Costs using STAI, benefiting from higher pass rates and reduced retraining needs.</p>
+                        <div class="space-y-3">
+                            <p class="flex justify-between">Est. Pass Rate: <span id="staiPassRate" class="font-semibold"></span></p>
+                            <p class="flex justify-between">Additional Training Hours: <span id="staiRetrainingHours" class="font-semibold"></span></p>
+                            <p class="flex justify-between">Total Wage Cost: <span id="staiWageCost" class="font-semibold"></span></p>
+                             <p class="flex justify-between">STAI Software Cost: <span id="staiSoftwareCost" class="font-semibold"></span></p>
+                            <p class="flex justify-between text-xl font-bold text-green-600">Total Cost: <span id="staiTotalCost"></span></p>
+                        </div>
+                    </div>
+                     <!-- Savings Summary -->
+                    <div class="bg-green-50 p-6 rounded-lg border border-green-200 text-center">
+                         <h3 class="text-lg font-semibold text-green-800">Annual Savings with STAI™</h3>
+                         <p class="text-5xl font-bold text-green-600 mt-2" id="totalSavings"></p>
+                    </div>
+                     <!-- STAI Revenue -->
+                    <div class="bg-indigo-50 p-6 rounded-lg border border-indigo-200 text-center">
+                        <h3 class="text-lg font-semibold text-indigo-800">STAI™ Platform Revenue</h3>
+                        <p class="text-5xl font-bold text-indigo-600 mt-2" id="staiPlatformRevenue"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution Graphs Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Pre-Course Scores Section -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Pre-Course Assessment Scores</h2>
+                <p class="text-gray-600 mb-4 text-sm">Both groups started with similar baseline knowledge, crucial for a fair comparison.</p>
+                <div id="pre-course-chart" class="w-full h-80"></div>
+                <div class="flex justify-center items-center mt-4 space-x-6 text-sm">
+                    <div class="flex items-center"><div class="w-4 h-4 rounded-full bg-blue-500 mr-2"></div><span>Group A (STAI)</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div><span>Group B (Traditional)</span></div>
+                </div>
+            </div>
+
+            <!-- Post-Course Scores Section -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Post-Course Assessment Scores</h2>
+                <p class="text-gray-600 mb-4 text-sm">The STAI group's curve shows higher, more consistent scores, while the traditional group's is wider and lower.</p>
+                <div id="post-course-chart" class="w-full h-80"></div>
+                 <div class="flex justify-center items-center mt-4 space-x-6 text-sm">
+                    <div class="flex items-center"><div class="w-4 h-4 rounded-full bg-blue-500 mr-2"></div><span>Group A (STAI)</span></div>
+                    <div class="flex items-center"><div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div><span>Group B (Traditional)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guide to the Calculator Section -->
+        <div class="bg-white p-6 rounded-xl shadow-md mt-10">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Guide to the Calculator</h2>
+            <div class="space-y-6 text-gray-700">
+                <p>This calculator uses statistical methods to project training costs based on the performance data from the provided academic study. Here’s a breakdown of how it works and the assumptions it makes.</p>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Data from the Report</h3>
+                    <p>The core performance metrics are taken directly from <strong>Table 2</strong> of the report, "A Comparative Study on the Effectiveness of Smart-Training Al™ Versus Traditional Training Methods". These figures represent the post-course assessment results:</p>
+                    <ul class="list-disc list-inside mt-2 space-y-1 text-sm pl-2">
+                        <li><strong>STAI™ Training (Group A):</strong> Mean Score = 80.5%, Standard Deviation = 2.9%</li>
+                        <li><strong>Traditional Training (Group B):</strong> Mean Score = 59.4%, Standard Deviation = 7.1%</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Core Calculation: Estimating Pass Rates</h3>
+                    <p>The calculator assumes the test scores for each group follow a Normal Distribution (the classic "bell curve" shown in the graphs). Using the mean and standard deviation for each group, it calculates the theoretical probability that a randomly chosen employee will score above your "Required Pass Score". This gives us the "Est. Pass Rate" for each training method.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Calculating Retraining Costs</h3>
+                    <p>Once we have the pass rate, we can determine the total cost. For example, if you need 70% of 1,000 employees to pass (i.e., 700 people), but a training method only has a 50% pass rate, you will need to train 1,400 people in total (`700 / 0.50`) to meet your target. The model calculates the wage cost for these additional training hours, which is the primary driver of the difference in total cost.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Key Assumptions</h3>
+                    <ul class="list-disc list-inside mt-2 space-y-2 text-sm pl-2">
+                        <li><strong>Normal Distribution:</strong> The model assumes that the spread of test scores for any group of your employees will follow a normal (bell curve) distribution.</li>
+                        <li><strong>Data Representation:</strong> It assumes the study's participants are a representative sample of your employees and that future training will yield statistically similar results.</li>
+                        <li><strong>Retraining Independence:</strong> The model simplifies retraining by calculating the total number of training sessions required. It assumes the pass probability for an employee being retrained is the same as for a first-time trainee.</li>
+                        <li><strong>Fixed Inputs:</strong> Variables like "Course Duration" are fixed at 8 hours for this model. In a real-world scenario, you would adjust this to match your specific training programme.</li>
+                        <li><strong>Score Interpretation:</strong> The model interprets the scores from the report as percentages (e.g., a score of 80.5 is 80.5%). This is based on the column headers in the source document's Table 2 which explicitly use the '%' symbol.</li>
+                        <li><strong>Realistic Pass Scores:</strong> The calculator is most insightful for standard business scenarios. Its hard cap at an 80% required pass score reflects that few real-world assessments require higher for competency.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <footer class="text-center mt-10 text-gray-500 text-sm">
+            <p>Visualisation and calculation based on data from "A Comparative Study on the Effectiveness of Smart-Training Al™ Versus Traditional Training Methods".</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA FROM THE REPORT ---
+        const preCourseData = { groupA: { mean: 39.6, sd: 4.8 }, groupB: { mean: 38.2, sd: 4.8 } };
+        const postCourseData = { groupA: { mean: 80.5, sd: 2.9 }, groupB: { mean: 59.4, sd: 7.1 } };
+        const courseDuration = 8; // hours
+        
+        // --- DOM ELEMENTS ---
+        const inputs = {
+            employees: document.getElementById('employees'),
+            hourlyWage: document.getElementById('hourlyWage'),
+            passScore: document.getElementById('passScore'),
+            passRate: document.getElementById('passRate'),
+            staiCost: document.getElementById('staiCost')
+        };
+        const outputs = {
+            tradPassRate: document.getElementById('tradPassRate'),
+            tradRetrainingHours: document.getElementById('tradRetrainingHours'),
+            tradWageCost: document.getElementById('tradWageCost'),
+            tradTotalCost: document.getElementById('tradTotalCost'),
+            staiPassRate: document.getElementById('staiPassRate'),
+            staiRetrainingHours: document.getElementById('staiRetrainingHours'),
+            staiWageCost: document.getElementById('staiWageCost'),
+            staiSoftwareCost: document.getElementById('staiSoftwareCost'),
+            staiTotalCost: document.getElementById('staiTotalCost'),
+            totalSavings: document.getElementById('totalSavings'),
+            staiPlatformRevenue: document.getElementById('staiPlatformRevenue')
+        };
+        
+        // --- MATH FUNCTIONS ---
+        // erf(x) approximation
+        function erf(x) {
+            const a1 =  0.254829592; const a2 = -0.284496736; const a3 =  1.421413741;
+            const a4 = -1.453152027; const a5 =  1.061405429; const p  =  0.3275911;
+            const sign = (x >= 0) ? 1 : -1;
+            x = Math.abs(x);
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            return sign * y;
+        }
+
+        // Cumulative Distribution Function for Normal Distribution
+        function normalCDF(x, mean, sd) {
+            return 0.5 * (1 + erf((x - mean) / (sd * Math.sqrt(2))));
+        }
+
+        // --- CALCULATION LOGIC ---
+        function calculateROI() {
+            const numEmployees = parseFloat(inputs.employees.value);
+            const hourlyWage = parseFloat(inputs.hourlyWage.value);
+            const requiredPassScore = parseFloat(inputs.passScore.value);
+            const requiredPassRate = parseFloat(inputs.passRate.value) / 100;
+            const staiCostPerEmployee = parseFloat(inputs.staiCost.value);
+            
+            if (isNaN(numEmployees) || isNaN(hourlyWage) || isNaN(requiredPassScore) || isNaN(requiredPassRate) || isNaN(staiCostPerEmployee)) return;
+            
+            const wageCostPerCourse = courseDuration * hourlyWage;
+            const targetPassCount = numEmployees * requiredPassRate;
+
+            // Calculate pass rates from performance data
+            const tradActualPassRate = 1 - normalCDF(requiredPassScore, postCourseData.groupB.mean, postCourseData.groupB.sd);
+            const staiActualPassRate = 1 - normalCDF(requiredPassScore, postCourseData.groupA.mean, postCourseData.groupA.sd);
+
+            // Traditional Training Calculation
+            // Handle case where pass rate is 0 to avoid division by zero
+            const tradTraineesNeeded = (tradActualPassRate > 0) ? Math.max(numEmployees, Math.ceil(targetPassCount / tradActualPassRate)) : Infinity;
+            const tradTotalWageCost = isFinite(tradTraineesNeeded) ? tradTraineesNeeded * wageCostPerCourse : Infinity;
+            const tradTotalCost = tradTotalWageCost;
+            
+            // STAI Training Calculation
+            const staiTraineesNeeded = (staiActualPassRate > 0) ? Math.max(numEmployees, Math.ceil(targetPassCount / staiActualPassRate)) : Infinity;
+            const staiTotalWageCost = isFinite(staiTraineesNeeded) ? staiTraineesNeeded * wageCostPerCourse : Infinity;
+            const staiSoftwareCost = numEmployees * staiCostPerEmployee;
+            const staiTotalCost = isFinite(staiTotalWageCost) ? staiTotalWageCost + staiSoftwareCost : Infinity;
+
+            // Savings
+            const savings = tradTotalCost - staiTotalCost;
+
+            // --- UPDATE UI ---
+            const formatCurrency = (value) => {
+                if (!isFinite(value)) return "£ N/A";
+                return `£${value.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+            }
+            const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
+            const formatHours = (initial, needed, duration) => {
+                 if (!isFinite(needed)) return "Impossible";
+                 const retrainingCount = needed - initial;
+                 const hours = retrainingCount > 0 ? retrainingCount * duration : 0;
+                 return `${hours.toLocaleString('en-GB')} hours`;
+            }
+
+            outputs.tradPassRate.textContent = formatPercent(tradActualPassRate);
+            outputs.tradRetrainingHours.textContent = formatHours(numEmployees, tradTraineesNeeded, courseDuration);
+            outputs.tradWageCost.textContent = formatCurrency(tradTotalWageCost);
+            outputs.tradTotalCost.textContent = formatCurrency(tradTotalCost);
+
+            outputs.staiPassRate.textContent = formatPercent(staiActualPassRate);
+            outputs.staiRetrainingHours.textContent = formatHours(numEmployees, staiTraineesNeeded, courseDuration);
+            outputs.staiWageCost.textContent = formatCurrency(staiTotalWageCost);
+            outputs.staiSoftwareCost.textContent = formatCurrency(staiSoftwareCost);
+            outputs.staiTotalCost.textContent = formatCurrency(staiTotalCost);
+            
+            outputs.totalSavings.textContent = formatCurrency(savings);
+            outputs.staiPlatformRevenue.textContent = formatCurrency(staiSoftwareCost);
+        }
+
+        // --- CHARTING FUNCTIONS ---
+        function normalPDF(x, mean, sd) {
+            const E = Math.E, PI = Math.PI;
+            const variance = sd * sd;
+            const exponent = -((x - mean) ** 2) / (2 * variance);
+            return (1 / (sd * Math.sqrt(2 * PI))) * (E ** exponent);
+        }
+
+        function generateCurveData(mean, sd, range) {
+            const data = [];
+            for (let i = range.min; i <= range.max; i += 0.5) {
+                data.push({ x: i, y: normalPDF(i, mean, sd) });
+            }
+            return data;
+        }
+        
+        function createChart(containerId, dataA, dataB, range) {
+            d3.select("#" + containerId).select("svg").remove(); // Clear previous chart
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const margin = { top: 20, right: 30, bottom: 50, left: 50 };
+            const width = container.clientWidth - margin.left - margin.right;
+            const height = container.clientHeight - margin.top - margin.bottom;
+
+            const svg = d3.select("#" + containerId).append("svg")
+                .attr("viewBox", `0 0 ${container.clientWidth} ${container.clientHeight}`)
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const curveDataA = generateCurveData(dataA.mean, dataA.sd, range);
+            const curveDataB = generateCurveData(dataB.mean, dataB.sd, range);
+            const allData = [...curveDataA, ...curveDataB];
+
+            const xScale = d3.scaleLinear().domain([range.min, range.max]).range([0, width]);
+            const yScale = d3.scaleLinear().domain([0, d3.max(allData, d => d.y) * 1.1]).range([height, 0]);
+
+            svg.append("g").attr("transform", `translate(0, ${height})`).call(d3.axisBottom(xScale));
+            svg.append("g").call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format(".2f")));
+
+            svg.append("text").attr("text-anchor", "middle").attr("x", width / 2).attr("y", height + margin.bottom - 10).text("Assessment Score (%)").style("fill", "#4b5563");
+            svg.append("text").attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("y", -margin.left + 15).attr("x", -height / 2).text("Probability Density").style("fill", "#4b5563");
+
+            const line = d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(d3.curveBasis);
+
+            svg.append("path").datum(curveDataA).attr("fill", "none").attr("stroke", "#3b82f6").attr("stroke-width", 2.5).attr("d", line);
+            svg.append("path").datum(curveDataB).attr("fill", "none").attr("stroke", "#ef4444").attr("stroke-width", 2.5).attr("d", line);
+        }
+        
+        function initializeApp() {
+            const scoreRange = { min: 0, max: 100 };
+            const valueDisplays = {
+                employees: document.getElementById('employees-value'),
+                hourlyWage: document.getElementById('hourlyWage-value'),
+                passScore: document.getElementById('passScore-value'),
+                passRate: document.getElementById('passRate-value'),
+                staiCost: document.getElementById('staiCost-value')
+            };
+
+            const drawCharts = () => {
+                createChart("pre-course-chart", preCourseData.groupA, preCourseData.groupB, scoreRange);
+                createChart("post-course-chart", postCourseData.groupA, postCourseData.groupB, scoreRange);
+            };
+            
+            const updateAll = () => {
+                valueDisplays.employees.textContent = parseFloat(inputs.employees.value).toLocaleString('en-GB');
+                valueDisplays.hourlyWage.textContent = `£${inputs.hourlyWage.value}`;
+                valueDisplays.passScore.textContent = `${inputs.passScore.value}%`;
+                valueDisplays.passRate.textContent = `${inputs.passRate.value}%`;
+                valueDisplays.staiCost.textContent = `£${inputs.staiCost.value}`;
+                calculateROI();
+            }
+            
+            Object.values(inputs).forEach(input => input.addEventListener('input', updateAll));
+            
+            updateAll(); // Initial calculation and display update
+            drawCharts();
+            
+            new ResizeObserver(drawCharts).observe(document.getElementById('pre-course-chart'));
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+
+</body>
+</html>
